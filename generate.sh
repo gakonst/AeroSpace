@@ -56,7 +56,13 @@ EOF
 
 if test $generate_xcodeproj = 1; then
     export XCODEGEN_AEROSPACE_VERSION=$build_version
-    ./script/install-dep.sh --xcodegen
     cd xcode
-    ../.deps/xcodegen/xcodegen # https://github.com/yonaskolb/XcodeGen
+    if /usr/bin/which xcodegen &> /dev/null; then
+        xcodegen
+    else
+        cd ..
+        ./script/install-dep.sh --xcodegen
+        cd xcode
+        ../.deps/xcodegen/xcodegen # https://github.com/yonaskolb/XcodeGen
+    fi
 fi

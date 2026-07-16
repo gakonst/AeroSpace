@@ -1,0 +1,32 @@
+name: release fork
+
+on:
+  push:
+    tags:
+      - "v*-sticky.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - run: ./.github/gh-actions-runner-xcode-select.sh
+      - uses: DeterminateSystems/nix-installer-action@v22
+      - name: Build release with the Nix-managed toolchain
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          nix develop --command ./build-release.sh \
+            --build-version "$version" \
+            --codesign-identity -
+      - name: Publish immutable release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            ".release/AeroSpace-v${version}.zip#AeroSpace ${version}" \
+            --title "AeroSpace ${version}" \
+            --notes "AeroSpace v0.21.3-Beta with sticky floating windows from upstream PR #2083 and fork fixes."
