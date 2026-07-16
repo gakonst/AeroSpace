@@ -1,7 +1,7 @@
 {
   description = "AeroSpace sticky-layout fork build environment";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/f361a82ad8e4170a3bcdcfa7816206d8f5fd066e";
+  inputs.nixpkgs.url = "tarball+https://github.com/NixOS/nixpkgs/archive/f361a82ad8e4170a3bcdcfa7816206d8f5fd066e.tar.gz";
 
   outputs =
     { nixpkgs, ... }:
