@@ -27,9 +27,10 @@
             installPhase = ''
               runHook preInstall
               ${pkgs.unzip}/bin/unzip "$src" -d unpacked
-              install -Dm755 \
-                unpacked/xcodegen.artifactbundle/xcodegen-2.45.3-macosx/bin/xcodegen \
-                "$out/bin/xcodegen"
+              mkdir -p "$out"
+              cp -R \
+                unpacked/xcodegen.artifactbundle/xcodegen-2.45.3-macosx/bin \
+                "$out/bin"
               runHook postInstall
             '';
           };
