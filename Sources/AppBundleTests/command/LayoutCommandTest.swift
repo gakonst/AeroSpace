@@ -237,18 +237,23 @@ final class LayoutCommandTest: XCTestCase {
         assertEquals(workspace.floatingWindows.map(\.windowId), [1])
     }
 
-    func testStickyAutoFloatsAndTogglesOff() async {
+    func testStickyRequiresFullscreenAndPreservesTiling() async {
         let workspace = Workspace.get(byName: name)
         let window = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
         assertEquals(window.focusWindow(), true)
 
         await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
-        assertTrue(window.isSticky)
-        assertEquals(workspace.floatingWindows.map(\.windowId), [1])
-
-        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
         assertFalse(window.isSticky)
-        assertEquals(workspace.floatingWindows.map(\.windowId), [1])
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1)]))
+
+        await parseCommand("fullscreen on").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertTrue(window.isSticky)
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1)]))
+
+        await parseCommand("fullscreen off").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertFalse(window.isSticky)
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1)]))
     }
 
     func testOtherLayoutClearsSticky() async {
@@ -260,6 +265,7 @@ final class LayoutCommandTest: XCTestCase {
         await parseCommand("layout floating").cmdOrDie.run(.defaultEnv, .emptyStdin)
         assertFalse(window.isSticky)
 
+        window.isFullscreen = true
         await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
         await parseCommand("layout sticky tiling").cmdOrDie.run(.defaultEnv, .emptyStdin)
         assertFalse(window.isSticky)

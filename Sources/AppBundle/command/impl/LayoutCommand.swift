@@ -86,11 +86,7 @@ struct LayoutCommand: Command {
                 guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
                 if window.isSticky {
                     window.isSticky = false
-                } else {
-                    if case .tilingContainer = node {
-                        window.bindAsFloatingWindow(to: target.workspace)
-                        if let size = window.lastFloatingSize { window.setAxFrame(nil, size) }
-                    }
+                } else if window.isFullscreen {
                     window.isSticky = true
                 }
                 return .succ
@@ -129,7 +125,7 @@ extension ConventionalWindowParentCases {
             case .v_tiles:     tilingContainerOrNil.map { $0.layout == .tiles && $0.orientation == .v } == true
             case .tiling:      tilingContainerOrNil != nil
             case .floating:    floatingWindowsContainerOrNil != nil
-            case .sticky:      floatingWindowsContainerOrNil != nil && window?.isSticky == true
+            case .sticky:      window?.isSticky == true
         }
     }
 }

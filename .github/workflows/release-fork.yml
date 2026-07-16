@@ -29,4 +29,4 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             ".release/AeroSpace-v${version}.zip#AeroSpace ${version}" \
             --title "AeroSpace ${version}" \
-            --notes "AeroSpace v0.21.3-Beta with sticky floating windows from upstream PR #2083 and fork fixes."
+            --notes "AeroSpace v0.21.3-Beta with fullscreen-scoped sticky windows based on upstream PR #2083. Sticky preserves normal tiling and clears when fullscreen exits."

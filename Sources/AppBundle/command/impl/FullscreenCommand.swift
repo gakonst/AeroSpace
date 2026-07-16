@@ -26,6 +26,9 @@ struct FullscreenCommand: Command {
             }
         }
         window.isFullscreen = newState
+        if !newState {
+            window.isSticky = false
+        }
         window.noOuterGapsInFullscreen = args.noOuterGaps
 
         // Focus on its own workspace
