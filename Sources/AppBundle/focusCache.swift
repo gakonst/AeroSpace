@@ -7,12 +7,12 @@
     if nativeFocused?.parent is MacosPopupWindowsContainer {
         return
     }
-    if let macWindow = nativeFocused as? MacWindow,
-       macWindow.isSticky,
-       macWindow.visualWorkspace != focus.workspace
+    if let nativeFocused,
+       nativeFocused.isSticky,
+       nativeFocused.visualWorkspace != focus.workspace
     {
-        lastKnownNativeFocusedWindowId = nativeFocused?.windowId
-        macWindow.macAppUnsafe.lastNativeFocusedWindowId = nativeFocused?.windowId
+        lastKnownNativeFocusedWindowId = nativeFocused.windowId
+        nativeFocused.macAppUnsafe.lastNativeFocusedWindowId = nativeFocused.windowId
         return
     }
     if nativeFocused?.windowId != lastKnownNativeFocusedWindowId {

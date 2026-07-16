@@ -35,7 +35,7 @@ public struct LayoutCmdArgs: CmdArgs {
     public var failIfNoop: Bool = false
 }
 
-public let layoutCommandRootFlagIncompatibilityMsg = "layout command: --root and tiling|floating are incompatible"
+public let layoutCommandRootFlagIncompatibilityMsg = "layout command: --root and tiling|floating|sticky are incompatible"
 
 private func parseToggleBetween(input: PosArgParserInput) -> ParsedCliArgs<[LayoutCmdArgs.LayoutDescription]> {
     let args = input.nonFlagArgs()

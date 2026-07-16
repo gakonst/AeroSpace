@@ -10,11 +10,17 @@ final class LayoutCommandTest: XCTestCase {
         assertNil(parseCommand("layout v_tiles h_tiles").errorOrNil)
         assertNil(parseCommand("layout tiling").errorOrNil)
         assertNil(parseCommand("layout floating tiling").errorOrNil)
+        assertNil(parseCommand("layout sticky").errorOrNil)
         assertNil(parseCommand("layout --window-id 1 horizontal vertical").errorOrNil)
 
         testParseCommandFail(
             "layout --root accordion tiling",
-            msg: "layout command: --root and tiling|floating are incompatible",
+            msg: "layout command: --root and tiling|floating|sticky are incompatible",
+            exitCode: 2,
+        )
+        testParseCommandFail(
+            "layout --root sticky",
+            msg: "layout command: --root and tiling|floating|sticky are incompatible",
             exitCode: 2,
         )
         testParseSingleCommandSucc(
@@ -229,6 +235,36 @@ final class LayoutCommandTest: XCTestCase {
         // Now it's tiled, so the same toggle picks .floating
         await parseCommand("layout floating tiling").cmdOrDie.run(.defaultEnv, .emptyStdin)
         assertEquals(workspace.floatingWindows.map(\.windowId), [1])
+    }
+
+    func testStickyAutoFloatsAndTogglesOff() async {
+        let workspace = Workspace.get(byName: name)
+        let window = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
+        assertEquals(window.focusWindow(), true)
+
+        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertTrue(window.isSticky)
+        assertEquals(workspace.floatingWindows.map(\.windowId), [1])
+
+        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertFalse(window.isSticky)
+        assertEquals(workspace.floatingWindows.map(\.windowId), [1])
+    }
+
+    func testOtherLayoutClearsSticky() async {
+        let workspace = Workspace.get(byName: name)
+        let window = TestWindow.new(id: 1, parent: workspace.floatingWindowsContainer)
+        window.isSticky = true
+        assertEquals(window.focusWindow(), true)
+
+        await parseCommand("layout floating").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertFalse(window.isSticky)
+
+        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        await parseCommand("layout sticky tiling").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertFalse(window.isSticky)
+        assertEquals(workspace.floatingWindows, [])
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1)]))
     }
 
     func testRoot_changesRootInsteadOfNestedParent() async {

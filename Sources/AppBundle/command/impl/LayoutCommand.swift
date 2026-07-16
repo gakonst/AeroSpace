@@ -31,7 +31,9 @@ struct LayoutCommand: Command {
 
         let targetDescription = args.toggleBetween.val.first(where: { !node.matchesDescription($0, target.windowOrNil) })
             ?? args.toggleBetween.val.first.orDie()
-        if node.matchesDescription(targetDescription, target.windowOrNil) {
+        let runDespiteMatching = targetDescription == .sticky ||
+            (targetDescription == .floating && target.windowOrNil?.isSticky == true)
+        if node.matchesDescription(targetDescription, target.windowOrNil) && !runDespiteMatching {
             switch args.failIfNoop {
                 case true: return .fail
                 case false:
@@ -59,6 +61,7 @@ struct LayoutCommand: Command {
                 return changeTilingLayout(io, targetLayout: nil, targetOrientation: .v, node: node)
             case .tiling:
                 guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
+                window.isSticky = false
                 switch node {
                     case .tilingContainer:
                         return .succ // Nothing to do
@@ -74,18 +77,21 @@ struct LayoutCommand: Command {
                 }
             case .floating:
                 guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
+                window.isSticky = false
                 let workspace = target.workspace
                 window.bindAsFloatingWindow(to: workspace)
                 if let size = window.lastFloatingSize { window.setAxFrame(nil, size) }
                 return .succ
             case .sticky:
                 guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
-                guard let macWindow = window as? MacWindow else { return .fail }
-                if macWindow.isSticky {
-                    macWindow.isSticky = false
+                if window.isSticky {
+                    window.isSticky = false
                 } else {
-                    guard case .floatingWindowsContainer = node else { return .fail }
-                    macWindow.isSticky = true
+                    if case .tilingContainer = node {
+                        window.bindAsFloatingWindow(to: target.workspace)
+                        if let size = window.lastFloatingSize { window.setAxFrame(nil, size) }
+                    }
+                    window.isSticky = true
                 }
                 return .succ
         }
@@ -123,7 +129,7 @@ extension ConventionalWindowParentCases {
             case .v_tiles:     tilingContainerOrNil.map { $0.layout == .tiles && $0.orientation == .v } == true
             case .tiling:      tilingContainerOrNil != nil
             case .floating:    floatingWindowsContainerOrNil != nil
-            case .sticky:      floatingWindowsContainerOrNil != nil && (window as? MacWindow)?.isSticky == true
+            case .sticky:      floatingWindowsContainerOrNil != nil && window?.isSticky == true
         }
     }
 }
