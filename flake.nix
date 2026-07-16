@@ -10,8 +10,30 @@
         "aarch64-darwin"
         "x86_64-darwin"
       ];
+      mkAerospace =
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          version = "0.21.3-Beta-sticky.1";
+        in
+        pkgs.aerospace.overrideAttrs (_previous: {
+          inherit version;
+          src = pkgs.fetchzip {
+            url = "https://github.com/gakonst/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
+            hash = "sha256-2c9JxDPFrn9+tuAJYQYDaIwEZigT6aBE82ya/BU8u2c=";
+          };
+
+          # Stripping rewrites the Mach-O binaries and invalidates the release
+          # signatures used by macOS Accessibility permissions.
+          dontStrip = true;
+        });
     in
     {
+      packages = forAllDarwin (system: {
+        default = mkAerospace system;
+        aerospace = mkAerospace system;
+      });
+
       devShells = forAllDarwin (
         system:
         let
