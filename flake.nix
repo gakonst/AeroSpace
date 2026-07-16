@@ -14,13 +14,13 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          version = "0.21.3-Beta-sticky.2";
+          version = "0.21.3-Beta-sticky.3";
         in
         pkgs.aerospace.overrideAttrs (_previous: {
           inherit version;
           src = pkgs.fetchzip {
             url = "https://github.com/gakonst/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-            hash = "sha256-kfBuiSpZ9adOE7YKZ1V0OGqGpKyjr0RQBO6b8jUQLX0=";
+            hash = "sha256-SdQUiWk1moYtTdk0zJ6Oz5subQKxDDbjoT+kaK/Y1us=";
           };
 
           # Stripping rewrites the Mach-O binaries and invalidates the release
