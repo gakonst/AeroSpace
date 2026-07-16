@@ -3,7 +3,8 @@
 This fork tracks an upstream release and carries the sticky-window foundation
 from [upstream PR #2083](https://github.com/nikitabobko/AeroSpace/pull/2083).
 The fork scopes sticky state to AeroSpace fullscreen windows: sticky never
-changes a window's tiling mode, and leaving fullscreen always clears it.
+changes a window's tiling mode, survives temporarily focusing another window,
+and leaving fullscreen always clears it.
 
 The release workflow builds inside the pinned Nix development shell. Apple
 Xcode and its Swift SDK remain host dependencies because they are required to

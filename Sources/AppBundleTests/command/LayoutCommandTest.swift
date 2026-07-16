@@ -256,6 +256,25 @@ final class LayoutCommandTest: XCTestCase {
         assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1)]))
     }
 
+    func testStickyFullscreenSurvivesFocusingSiblingWindow() async throws {
+        let workspace = Workspace.get(byName: name)
+        let sticky = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
+        let sibling = TestWindow.new(id: 2, parent: workspace.rootTilingContainer)
+        assertEquals(sticky.focusWindow(), true)
+
+        await parseCommand("fullscreen on").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        await parseCommand("layout sticky").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertTrue(sticky.isFullscreen)
+        assertTrue(sticky.isSticky)
+
+        assertEquals(sibling.focusWindow(), true)
+        try await workspace.layoutWorkspace()
+
+        assertTrue(sticky.isFullscreen)
+        assertTrue(sticky.isSticky)
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_tiles([.window(1), .window(2)]))
+    }
+
     func testOtherLayoutClearsSticky() async {
         let workspace = Workspace.get(byName: name)
         let window = TestWindow.new(id: 1, parent: workspace.floatingWindowsContainer)
